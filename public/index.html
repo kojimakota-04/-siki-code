@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Concert Stage</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #222; color: #fff; padding-top: 50px; }
+        #status { font-size: 2rem; margin-bottom: 20px; }
+        .meter { width: 300px; height: 20px; background: #555; margin: 10px auto; border-radius: 10px; overflow: hidden; }
+        .bar { height: 100%; background: #00ADB5; width: 50%; transition: none; }
+    </style>
+</head>
+<body>
+    <h1>Orchestra Player</h1>
+    <div id="status">Click here to Start</div>
+    
+    <div>Playback Rate: <span id="rateVal">1.0</span></div>
+    <div class="meter"><div id="rateBar" class="bar"></div></div>
+    
+    <div>Volume: <span id="volVal">-10 dB</span></div>
+    <div class="meter"><div id="volBar" class="bar"></div></div>
+
+    <script>
+        const socket = io();
+        let player;
+        let isReady = false;
+        let targetRate = 1.0;
+        let targetVol = -10;
+        let currentRate = 1.0;
+        let currentVol = -10;
+        const SMOOTHING = 0.05;
+
+        document.body.addEventListener('click', async () => {
+            if (!isReady) {
+                await Tone.start();
+                // 指定の音楽ファイル
+                player = new Tone.Player("/kamatamago_C00003_heaven-and-hell.wav").toDestination();
+                player.loop = true;
+                await player.load("/kamatamago_C00003_heaven-and-hell.wav");
+                player.start();
+                isReady = true;
+                document.getElementById('status').innerText = "Playing...";
+            }
+        });
+
+        socket.on('update-playback', (data) => {
+            targetRate = data.rate;
+            targetVol = data.volume;
+        });
+
+        function updateLoop() {
+            if (isReady && player) {
+                currentRate += (targetRate - currentRate) * SMOOTHING;
+                currentVol += (targetVol - currentVol) * SMOOTHING;
+                player.playbackRate = currentRate;
+                player.volume.value = currentVol;
+
+                document.getElementById('rateVal').innerText = currentRate.toFixed(2);
+                document.getElementById('rateBar').style.width = (currentRate / 2.0 * 100) + "%";
+                document.getElementById('volVal').innerText = currentVol.toFixed(1) + " dB";
+                let volPercent = ((currentVol + 30) / 30) * 100;
+                document.getElementById('volBar').style.width = Math.max(0, volPercent) + "%";
+            }
+            requestAnimationFrame(updateLoop);
+        }
+        updateLoop();
+    </script>
+</body>
+</html>
