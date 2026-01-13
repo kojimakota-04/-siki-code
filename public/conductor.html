@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conductor</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #333; color: white; padding: 30px; }
+        #valBox { margin-top: 20px; font-size: 1.5rem; }
+        .big-btn { padding: 20px 40px; font-size: 1.2rem; background: #00ADB5; color: white; border: none; border-radius: 10px; margin-top: 50px;}
+    </style>
+</head>
+<body>
+    <h1>指揮者モード</h1>
+    <p>スマホを振って操作</p>
+    <button class="big-btn" onclick="start()">指揮を開始</button>
+    <div id="valBox">
+        BPM: <span id="bpmDisp">--</span><br>
+        Vol: <span id="volDisp">--</span>
+    </div>
+    <script src="conductor.js"></script>
+</body>
+</html>
